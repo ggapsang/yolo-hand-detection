@@ -7,8 +7,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--video', required=True, help='Path to video file')
 ap.add_argument('-n', '--network', default="normal", choices=["normal", "tiny", "prn", "v4-tiny"],
                 help='Network Type')
-ap.add_argument('-s', '--size', default=416, help='Size for yolo')
-ap.add_argument('-c', '--confidence', default=0.2, help='Confidence for yolo')
+ap.add_argument('-s', '--size', default=256, help='Size for yolo')
+ap.add_argument('-c', '--confidence', default=0.2, help='Confidence for yolo') # normal: 0.2, tiny: 0.1, prn: 0.1, v4-tiny: 0.05
 ap.add_argument('-nh', '--hands', default=-1, help='Total number of hands to be detected per frame (-1 for all)')
 ap.add_argument('-o', '--output', default=None, help='Path to save output video (e.g. output.mp4). Default: no save')
 args = ap.parse_args()
