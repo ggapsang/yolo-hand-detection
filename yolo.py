@@ -14,6 +14,10 @@ class YOLO:
         self.labels = labels
         try:
             self.net = cv2.dnn.readNetFromDarknet(config, model)
+
+            # OPEN CL이 지원되는 경우 GPU 사용, 그렇지 않으면 CPU 사용
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
         except:
             raise ValueError("Couldn't find the models!\nDid you forget to download them manually (and keep in the "
                              "correct directory, models/) or run the shell script?")
