@@ -1,4 +1,9 @@
+# 로컬 개발 (Windows)
 opencv-python
 opencv-contrib-python
 numpy>=2
 onnxruntime-directml
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-multipart

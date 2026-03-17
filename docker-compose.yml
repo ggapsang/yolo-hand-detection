@@ -1,0 +1,12 @@
+services:
+  hand-detection:
+    build: .
+    ports:
+      - "8911:8911"
+    volumes:
+      - ./models:/app/models
+    environment:
+      - YOLO_NETWORK=v11
+      - YOLO_CONFIDENCE=0.25
+      - YOLO_THRESHOLD=0.45
+      - YOLO_SIZE=640
