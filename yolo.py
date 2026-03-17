@@ -2,6 +2,7 @@ import time
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 
 
 class YOLODarknet:
@@ -94,12 +95,9 @@ class YOLOv11:
         self.threshold = threshold
         self.size = size
         self.labels = labels
-        try:
-            self.net = cv2.dnn.readNetFromONNX(model_path)
-            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
-        except:
-            raise ValueError("Couldn't load the ONNX model!\nMake sure models/best.onnx exists.")
+        providers = ['DmlExecutionProvider', 'CPUExecutionProvider']
+        self.session = ort.InferenceSession(model_path, providers=providers)
+        self.input_name = self.session.get_inputs()[0].name
 
     def inference_from_file(self, file):
         mat = cv2.imread(file)
@@ -108,16 +106,20 @@ class YOLOv11:
     def inference(self, image):
         ih, iw = image.shape[:2]
 
-        blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (self.size, self.size), swapRB=True, crop=False)
-        self.net.setInput(blob)
-        start = time.time()
-        outputs = self.net.forward()
-        end = time.time()
-        inference_time = end - start
+        # 전처리: resize → RGB → normalize → [1, C, H, W]
+        img = cv2.resize(image, (self.size, self.size))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = img.astype(np.float32) / 255.0
+        img = img.transpose(2, 0, 1)
+        img = np.expand_dims(img, axis=0)
 
-        # YOLOv8/v11 ONNX output shape: [1, 4+num_classes, num_anchors]
-        # transpose to [num_anchors, 4+num_classes]
-        output = outputs[0].transpose()
+        start = time.time()
+        outputs = self.session.run(None, {self.input_name: img})
+        inference_time = time.time() - start
+
+        # YOLOv8/v11 ONNX output: [1, 4+num_classes, num_anchors]
+        # squeeze batch dim → [4+num_classes, num_anchors], transpose → [num_anchors, 4+num_classes]
+        output = outputs[0].squeeze(0).T
         x_scale = iw / self.size
         y_scale = ih / self.size
 
