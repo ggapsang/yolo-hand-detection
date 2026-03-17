@@ -9,7 +9,7 @@ MODELS_DIR = Path(__file__).parent.parent.parent / "models"
 _MODEL_CONFIGS = {
     "v11": {
         "cls": YOLOv11,
-        "args": [str(MODELS_DIR / "best.onnx"), ["hand"]],
+        "args": [str(MODELS_DIR / "hand_detect_yolov11.onnx"), ["hand"]],
     },
     "normal": {
         "cls": YOLODarknet,

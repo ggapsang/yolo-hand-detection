@@ -15,7 +15,7 @@ args = ap.parse_args()
 
 if args.network == "v11":
     print("loading yolov11 onnx...")
-    yolo = YOLOv11("models/best.onnx", ["hand"])
+    yolo = YOLOv11("models/hand_detect_yolov11.onnx", ["hand"])
 elif args.network == "normal":
     print("loading yolo...")
     yolo = YOLODarknet("models/cross-hands.cfg", "models/cross-hands.weights", ["hand"])

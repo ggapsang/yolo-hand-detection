@@ -37,7 +37,7 @@
 
 | 옵션 | 모델 파일 | 클래스 | 비고 |
 |---|---|---|---|
-| `v11` | `models/best.onnx` | hand | YOLOv11 파인튜닝, **기본값** |
+| `v11` | `models/hand_detect_yolov11.onnx` | hand | YOLOv11 파인튜닝, **기본값** |
 | `normal` | `models/cross-hands.cfg/.weights` | hand | YOLOv3 |
 | `tiny` | `models/cross-hands-tiny.cfg/.weights` | hand | YOLOv3-Tiny |
 | `prn` | `models/cross-hands-tiny-prn.cfg/.weights` | hand | YOLOv3-Tiny-PRN, 작은 사이즈에서 잘 작동 |
