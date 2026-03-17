@@ -1,30 +1,33 @@
 import argparse
 import cv2
 
-from yolo import YOLO
+from yolo import YOLODarknet, YOLOv11
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--video', required=True, help='Path to video file')
-ap.add_argument('-n', '--network', default="normal", choices=["normal", "tiny", "prn", "v4-tiny"],
+ap.add_argument('-n', '--network', default="v11", choices=["v11", "normal", "tiny", "prn", "v4-tiny"],
                 help='Network Type')
-ap.add_argument('-s', '--size', default=256, help='Size for yolo') # normal: 416, tiny: 416, prn: 160, v4-tiny: 416 (prn은 작은 사이즈에서 더 잘 작동)
-ap.add_argument('-c', '--confidence', default=0.2, help='Confidence for yolo') # normal: 0.2, tiny: 0.1, prn: 0.1, v4-tiny: 0.05
+ap.add_argument('-s', '--size', default=640, help='Size for yolo') # v11: 640, normal: 416, tiny: 416, prn: 160, v4-tiny: 416
+ap.add_argument('-c', '--confidence', default=0.5, help='Confidence for yolo') # normal: 0.2, tiny: 0.1, prn: 0.1, v4-tiny: 0.05
 ap.add_argument('-nh', '--hands', default=-1, help='Total number of hands to be detected per frame (-1 for all)') # 프레임 당 최대 감지할 손의 수 (기본값 -1은 모두 감지)
 ap.add_argument('-o', '--output', default=None, help='Path to save output video (e.g. output.mp4). Default: no save')
 args = ap.parse_args()
 
-if args.network == "normal":
+if args.network == "v11":
+    print("loading yolov11 onnx...")
+    yolo = YOLOv11("models/best.onnx", ["hand"])
+elif args.network == "normal":
     print("loading yolo...")
-    yolo = YOLO("models/cross-hands.cfg", "models/cross-hands.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands.cfg", "models/cross-hands.weights", ["hand"])
 elif args.network == "prn":
     print("loading yolo-tiny-prn...")
-    yolo = YOLO("models/cross-hands-tiny-prn.cfg", "models/cross-hands-tiny-prn.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands-tiny-prn.cfg", "models/cross-hands-tiny-prn.weights", ["hand"])
 elif args.network == "v4-tiny":
     print("loading yolov4-tiny...")
-    yolo = YOLO("models/cross-hands-yolov4-tiny.cfg", "models/cross-hands-yolov4-tiny.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands-yolov4-tiny.cfg", "models/cross-hands-yolov4-tiny.weights", ["hand"])
 else:
     print("loading yolo-tiny...")
-    yolo = YOLO("models/cross-hands-tiny.cfg", "models/cross-hands-tiny.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands-tiny.cfg", "models/cross-hands-tiny.weights", ["hand"])
 
 yolo.size = int(args.size)
 yolo.confidence = float(args.confidence)

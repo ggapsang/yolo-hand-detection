@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 
-class YOLO:
+class YOLODarknet:
 
     def __init__(self, config, model, labels, size=416, confidence=0.5, threshold=0.3):
         self.confidence = confidence
@@ -83,5 +83,66 @@ class YOLO:
                 confidence = confidences[i]
 
                 results.append((id, self.labels[id], confidence, x, y, w, h))
+
+        return iw, ih, inference_time, results
+
+
+class YOLOv11:
+
+    def __init__(self, model_path, labels, size=640, confidence=0.25, threshold=0.45):
+        self.confidence = confidence
+        self.threshold = threshold
+        self.size = size
+        self.labels = labels
+        try:
+            self.net = cv2.dnn.readNetFromONNX(model_path)
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL)
+        except:
+            raise ValueError("Couldn't load the ONNX model!\nMake sure models/best.onnx exists.")
+
+    def inference_from_file(self, file):
+        mat = cv2.imread(file)
+        return self.inference(mat)
+
+    def inference(self, image):
+        ih, iw = image.shape[:2]
+
+        blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (self.size, self.size), swapRB=True, crop=False)
+        self.net.setInput(blob)
+        start = time.time()
+        outputs = self.net.forward()
+        end = time.time()
+        inference_time = end - start
+
+        # YOLOv8/v11 ONNX output shape: [1, 4+num_classes, num_anchors]
+        # transpose to [num_anchors, 4+num_classes]
+        output = outputs[0].transpose()
+        x_scale = iw / self.size
+        y_scale = ih / self.size
+
+        boxes = []
+        confidences = []
+        classIDs = []
+
+        for row in output:
+            scores = row[4:]
+            classID = np.argmax(scores)
+            conf = scores[classID]
+            if conf > self.confidence:
+                cx, cy, w, h = row[:4]
+                x = int((cx - w / 2) * x_scale)
+                y = int((cy - h / 2) * y_scale)
+                boxes.append([x, y, int(w * x_scale), int(h * y_scale)])
+                confidences.append(float(conf))
+                classIDs.append(classID)
+
+        idxs = cv2.dnn.NMSBoxes(boxes, confidences, self.confidence, self.threshold)
+
+        results = []
+        if len(idxs) > 0:
+            for i in idxs.flatten():
+                x, y, w, h = boxes[i]
+                results.append((classIDs[i], self.labels[classIDs[i]], confidences[i], x, y, w, h))
 
         return iw, ih, inference_time, results

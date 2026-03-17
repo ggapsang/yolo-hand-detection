@@ -4,29 +4,32 @@ import os
 
 import cv2
 
-from yolo import YOLO
+from yolo import YOLODarknet, YOLOv11
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--images', default="images", help='Path to images or image file')
-ap.add_argument('-n', '--network', default="normal", choices=["normal", "tiny", "prn", "v4-tiny"],
+ap.add_argument('-n', '--network', default="v11", choices=["v11", "normal", "tiny", "prn", "v4-tiny"],
                 help='Network Type')
 ap.add_argument('-d', '--device', default=0, help='Device to use')
-ap.add_argument('-s', '--size', default=416, help='Size for yolo')
+ap.add_argument('-s', '--size', default=640, help='Size for yolo')
 ap.add_argument('-c', '--confidence', default=0.25, help='Confidence for yolo')
 args = ap.parse_args()
 
-if args.network == "normal":
+if args.network == "v11":
+    print("loading yolov11 onnx...")
+    yolo = YOLOv11("models/best.onnx", ["hand"])
+elif args.network == "normal":
     print("loading yolo...")
-    yolo = YOLO("models/cross-hands.cfg", "models/cross-hands.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands.cfg", "models/cross-hands.weights", ["hand"])
 elif args.network == "prn":
     print("loading yolo-tiny-prn...")
-    yolo = YOLO("models/cross-hands-tiny-prn.cfg", "models/cross-hands-tiny-prn.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands-tiny-prn.cfg", "models/cross-hands-tiny-prn.weights", ["hand"])
 elif args.network == "v4-tiny":
-    print("loading yolov4-tiny-prn...")
-    yolo = YOLO("models/cross-hands-yolov4-tiny.cfg", "models/cross-hands-yolov4-tiny.weights", ["hand"])
+    print("loading yolov4-tiny...")
+    yolo = YOLODarknet("models/cross-hands-yolov4-tiny.cfg", "models/cross-hands-yolov4-tiny.weights", ["hand"])
 else:
     print("loading yolo-tiny...")
-    yolo = YOLO("models/cross-hands-tiny.cfg", "models/cross-hands-tiny.weights", ["hand"])
+    yolo = YOLODarknet("models/cross-hands-tiny.cfg", "models/cross-hands-tiny.weights", ["hand"])
 
 yolo.size = int(args.size)
 yolo.confidence = float(args.confidence)
