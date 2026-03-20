@@ -7,6 +7,6 @@ services:
       - ./models:/app/models
     environment:
       - YOLO_NETWORK=v11
-      - YOLO_CONFIDENCE=0.25
+      - YOLO_CONFIDENCE=0.8
       - YOLO_THRESHOLD=0.45
       - YOLO_SIZE=640
