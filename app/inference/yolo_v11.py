@@ -34,7 +34,14 @@ class YOLOv11(AbstractDetector):
     def inference(self, image: np.ndarray) -> tuple:
         ih, iw = image.shape[:2]
 
-        img = cv2.resize(image, (self.size, self.size))
+        scale = min(self.size / iw, self.size / ih)
+        new_w, new_h = int(iw * scale), int(ih * scale)
+        pad_x = (self.size - new_w) // 2
+        pad_y = (self.size - new_h) // 2
+
+        resized = cv2.resize(image, (new_w, new_h))
+        img = np.full((self.size, self.size, 3), 114, dtype=np.uint8)
+        img[pad_y:pad_y + new_h, pad_x:pad_x + new_w] = resized
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = img.astype(np.float32) / 255.0
         img = img.transpose(2, 0, 1)
@@ -47,8 +54,6 @@ class YOLOv11(AbstractDetector):
         # YOLOv8/v11 output: [1, 4+num_classes, num_anchors]
         # squeeze batch dim → [4+num_classes, num_anchors], transpose → [num_anchors, 4+num_classes]
         output = outputs[0].squeeze(0).T
-        x_scale = iw / self.size
-        y_scale = ih / self.size
 
         boxes, confidences, class_ids = [], [], []
 
@@ -58,9 +63,9 @@ class YOLOv11(AbstractDetector):
             conf = scores[class_id]
             if conf > self.confidence:
                 cx, cy, w, h = row[:4]
-                x = int((cx - w / 2) * x_scale)
-                y = int((cy - h / 2) * y_scale)
-                boxes.append([x, y, int(w * x_scale), int(h * y_scale)])
+                x = int((cx - w / 2 - pad_x) / scale)
+                y = int((cy - h / 2 - pad_y) / scale)
+                boxes.append([x, y, int(w / scale), int(h / scale)])
                 confidences.append(float(conf))
                 class_ids.append(class_id)
 

@@ -1,7 +1,7 @@
 # Docker (Linux) 용
 opencv-python-headless
 numpy>=2
-onnxruntime
+onnxruntime-directml
 fastapi
 uvicorn[standard]
 pydantic-settings

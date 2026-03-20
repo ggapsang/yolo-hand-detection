@@ -1,0 +1,8 @@
+.git
+__pycache__
+*.pyc
+images/
+videos/
+output.mp4
+readme/
+*.md

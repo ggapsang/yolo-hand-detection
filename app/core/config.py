@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     network: str = "v11"
-    confidence: float = 0.25
+    confidence: float = 0.7
     threshold: float = 0.45
     size: int = 640
     port: int = 8911
